@@ -2,3 +2,4 @@ game
 *.res
 *.ppu
 *.o
+*.~
