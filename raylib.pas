@@ -21,11 +21,37 @@ type
   end;
 
   PVector2 = ^Vector2;
+  PixelFormat = ( 
+      PIXELFORMAT_UNCOMPRESSED_GRAYSCALE := 1, // 8 bit per pixel (no alpha)
+      PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA,    // 8*2 bpp (2 channels)
+      PIXELFORMAT_UNCOMPRESSED_R5G6B5,        // 16 bpp
+      PIXELFORMAT_UNCOMPRESSED_R8G8B8,        // 24 bpp
+      PIXELFORMAT_UNCOMPRESSED_R5G5B5A1,      // 16 bpp (1 bit alpha)
+      PIXELFORMAT_UNCOMPRESSED_R4G4B4A4,      // 16 bpp (4 bit alpha)
+      PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,      // 32 bpp
+      PIXELFORMAT_UNCOMPRESSED_R32,           // 32 bpp (1 channel - float)
+      PIXELFORMAT_UNCOMPRESSED_R32G32B32,     // 32*3 bpp (3 channels - float)
+      PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,  // 32*4 bpp (4 channels - float)
+      PIXELFORMAT_UNCOMPRESSED_R16,           // 16 bpp (1 channel - half float)
+      PIXELFORMAT_UNCOMPRESSED_R16G16B16,     // 16*3 bpp (3 channels - half float)
+      PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,  // 16*4 bpp (4 channels - half float)
+      PIXELFORMAT_COMPRESSED_DXT1_RGB,        // 4 bpp (no alpha)
+      PIXELFORMAT_COMPRESSED_DXT1_RGBA,       // 4 bpp (1 bit alpha)
+      PIXELFORMAT_COMPRESSED_DXT3_RGBA,       // 8 bpp
+      PIXELFORMAT_COMPRESSED_DXT5_RGBA,       // 8 bpp
+      PIXELFORMAT_COMPRESSED_ETC1_RGB,        // 4 bpp
+      PIXELFORMAT_COMPRESSED_ETC2_RGB,        // 4 bpp
+      PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA,   // 8 bpp
+      PIXELFORMAT_COMPRESSED_PVRT_RGB,        // 4 bpp
+      PIXELFORMAT_COMPRESSED_PVRT_RGBA,       // 4 bpp
+      PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,   // 8 bpp
+      PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA    // 2 bpp
+    );
 
   KeyboardKey = (
     KEY_NULL            := 0,        // Key: NULL, used for no key pressed
     (* Alphanumeric keys *)
-    KEY_APOSTROPHE      := 39,       // Key: '
+    KEY_APOSTROPHE      := 39,       // Key: (*'*)
     KEY_COMMA           := 44,       // Key: ,
     KEY_MINUS           := 45,       // Key: -
     KEY_PERIOD          := 46,       // Key: .
@@ -139,6 +165,24 @@ type
     KEY_VOLUME_DOWN     := 25        // Key: Android volume down button
   );
 
+ Image  = record
+  Data: Pchar;
+  Width, Height: longInt;
+  Mipmaps: longInt;
+  Format: PixelFormat;
+ end;
+
+ PImage = ^Image;
+
+ Texture = record
+  Id: longWord;
+  Width, Height: longInt;
+  Mipmaps: longInt;
+  Format: PixelFormat;
+ end;
+
+
+  PTexture = ^Texture;
 
 (* Fim Tipos *)
 
@@ -198,6 +242,100 @@ function IsKeyDown (key: KeyboardKey): boolean; cdecl; external;
 
 (* Fim Teclado *)
 
+(* Imagem *)
+
+function BytesPerPixel (Format: PixelFormat): integer;
+
+function ImageCreate (Width: longInt; Height: longInt; Format: PixelFormat): PImage;
+
+procedure ImageDestroy (Image: PImage);
+
+{$L libraylib.a}
+procedure ImageClearBackground (Image: PImage; Color: Color); cdecl; external;
+
+{$L libraylib.a}
+procedure ImageDrawRectangleRec (Image: PImage; Rectangle: Rectangle; Color: Color); cdecl; external;
+(* Fim Imagem *)
+
+(* Textura *)
+
+{$L libraylib.a}
+function LoadTextureFromImage (Image: Image): Texture; cdecl; external;
+
+{$L libraylib.a}
+function IsTextureValid(Texture: Texture): boolean; cdecl; external;
+
+{$L libraylib.a}
+procedure UnloadTexture (Texture: Texture); cdecl; external;
+
+(* Fim Textura *)
+
 implementation
+
+function BytesPerPixel (Format: PixelFormat): integer;
+begin
+ case Format of
+    PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: BytesPerPixel := 1; // 8 bit per pixel (no alpha)
+    PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: BytesPerPixel := 2;    // 8*2 bpp (2 channels)
+    PIXELFORMAT_UNCOMPRESSED_R5G6B5: BytesPerPixel := 2;        // 16 bpp
+    PIXELFORMAT_UNCOMPRESSED_R8G8B8: BytesPerPixel := 3;        // 24 bpp
+    PIXELFORMAT_UNCOMPRESSED_R5G5B5A1: BytesPerPixel := 2;      // 16 bpp (1 bit alpha)
+    PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: BytesPerPixel := 2;      // 16 bpp (4 bit alpha)
+    PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: BytesPerPixel := 4;      // 32 bpp
+    PIXELFORMAT_UNCOMPRESSED_R32: BytesPerPixel := 4;           // 32 bpp (1 channel - float)
+    PIXELFORMAT_UNCOMPRESSED_R32G32B32: BytesPerPixel := 12;     // 32*3 bpp (3 channels - float)
+    PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: BytesPerPixel := 16; // 32*4 bpp (4 channels - float)
+    PIXELFORMAT_UNCOMPRESSED_R16: BytesPerPixel := 2;           // 16 bpp (1 channel - half float)
+    PIXELFORMAT_UNCOMPRESSED_R16G16B16: BytesPerPixel := 6; // 16*3 bpp (3 channels - half float)
+    PIXELFORMAT_UNCOMPRESSED_R16G16B16A16: BytesPerPixel := 8;  // 16*4 bpp (4 channels - half float)
+    PIXELFORMAT_COMPRESSED_DXT1_RGB: BytesPerPixel := 1;       // 4 bpp (no alpha)
+    PIXELFORMAT_COMPRESSED_DXT1_RGBA: BytesPerPixel := 1;       // 4 bpp (1 bit alpha)
+    PIXELFORMAT_COMPRESSED_DXT3_RGBA: BytesPerPixel := 1;       // 8 bpp
+    PIXELFORMAT_COMPRESSED_DXT5_RGBA: BytesPerPixel := 1;       // 8 bpp
+    PIXELFORMAT_COMPRESSED_ETC1_RGB: BytesPerPixel := 1;        // 4 bpp
+    PIXELFORMAT_COMPRESSED_ETC2_RGB: BytesPerPixel := 1;        // 4 bpp
+    PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA: BytesPerPixel := 1;   // 8 bpp
+    PIXELFORMAT_COMPRESSED_PVRT_RGB: BytesPerPixel := 1;        // 4 bpp
+    PIXELFORMAT_COMPRESSED_PVRT_RGBA: BytesPerPixel := 1;       // 4 bpp
+    PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA: BytesPerPixel := 1;   // 8 bpp
+    PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA: BytesPerPixel := 1;    // 2 bpp
+ end; 
+end;
+
+function ImageCreate (Width: longInt; Height: longInt; Format: PixelFormat): PImage;
+var
+  Data: Pchar;
+  Image: PImage;
+begin
+  Getmem (Data, PtrUInt (Width * Height) * PtrUInt (BytesPerPixel (Format)));
+  if Data = nil then
+  begin
+      Image := nil; 
+  end
+
+  else
+  begin
+    New (Image);
+    if Image = nil then
+    begin
+      Freemem (Data, PtrUInt (Width * Height) * PtrUInt (BytesPerPixel (Format)));
+      ImageCreate := nil;
+    end
+    else
+      Image^.Data := Data;
+      Image^.Width := Width;
+      Image^.Height := Height;
+      Image^.Mipmaps := 1;
+      Image^.Format := Format;
+    end;
+  //end;
+  ImageCreate := Image;
+end;
+
+procedure ImageDestroy (Image: PImage);
+begin
+  if Image^.Data <> nil then
+      Freemem (Image^.Data, PtrUInt (Image^.Width * Image^.Height) * PtrUInt (BytesPerPixel (Image^.Format)));
+end;
 
 end.

@@ -46,6 +46,8 @@ var
     EstaPulando: false;
   );
   Tempo: single;
+  Imagem: PImage;
+  Textura: Texture;
 
 
 const
@@ -107,6 +109,8 @@ end;
 begin
  InitWindow (LarguraTela, AlturaTela, 'Game');
  SetTargetFPS (60);
+ Imagem := ImageCreate (200, 200, PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA); 
+ Textura := LoadTextureFromImage (Imagem^);
  while WindowShouldClose () = false do
  begin
    Tempo := GetFrameTime ();
@@ -143,4 +147,6 @@ begin
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);
    EndDrawing ();
  end; 
+ ImageDestroy (Imagem); 
+ UnloadTexture (Textura);
 end.
