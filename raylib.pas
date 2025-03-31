@@ -268,6 +268,12 @@ function IsTextureValid(Texture: Texture): boolean; cdecl; external;
 {$L libraylib.a}
 procedure UnloadTexture (Texture: Texture); cdecl; external;
 
+{$L libraylib.a}
+procedure UpdateTexture (Texture: Texture; Pixels: PChar); cdecl; external;
+
+{$L libraylib.a}
+procedure UpdateTextureRec (Texture: Texture; Rec: Rectangle; Pixels: Pchar ); cdecl; external;
+
 (* Fim Textura *)
 
 implementation

@@ -1,6 +1,8 @@
 program game;
 
-uses raylib;
+uses 
+  raylib,
+  ui;
 
 type
   TJogador = record
