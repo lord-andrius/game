@@ -53,10 +53,16 @@ var
 const
   LarguraTela: longInt = 1280;
   AlturaTela: longInt = 720;
-  Gravidade: single = 67.5;
+  Gravidade: single = 120.5;
   DuracaoPulo: double = 0.2; 
-  Pulo: single = 15.0;
-  ContinuacaoPulo: single = 0.5;
+  Pulo: single = 1000.0;
+  ContinuacaoPulo: single = 0.10;
+  Andar: single = 480.0;
+  AceleracaoMaximaAndar: single = 480.0;
+  VelocidadeMaximaAndar: single = 480.0;
+  Correr: single =  4.0;
+  AceleracaoMaximaCorrer: single =  12.0;
+  VelocidadeMaximaCorrer: single =  24.0;
   Chao: TChao = (
     Retangulo: (
       X:      0;
@@ -84,26 +90,65 @@ end;
 procedure IniciarPulo (Jogador: PTJogador; Tempo: single);
 begin
   Jogador^.TempoInicioPulo := GetTime ();
-  //Jogador^.Velocidade.Y := 0; 
-  //Jogador^.Aceleracao.Y := 0;
   Jogador^.PodePular := false;
   Jogador^.EstaPulando := true;
-  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (Pulo * Gravidade);
+  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (Pulo);
   Jogador^.Velocidade.Y := Jogador^.Velocidade.y + (Jogador^.Aceleracao.Y * Tempo);
   Jogador^.Retangulo.Y := Jogador^.Retangulo.Y +
                           (Jogador^.Velocidade.Y * Tempo) +
                           ((Jogador^.Aceleracao.Y * (Tempo * Tempo)) / 2.0);
-  //Jogador^.Retangulo.Y := Jogador^.Retangulo.Y - (150 * Tempo );
-  //Jogador^.Retangulo.Y := Jogador^.Velocidade.Y + ((-Pulo * (Tempo*Tempo)) / 2.0);
 end;
 
 procedure ContinuarPulo (Jogador: PTJogador; Tempo: single);
 begin
-  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (Gravidade * ContinuacaoPulo);
+  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (ContinuacaoPulo * Pulo);
   Jogador^.Velocidade.Y := Jogador^.Velocidade.y + (Jogador^.Aceleracao.Y * Tempo);
   Jogador^.Retangulo.Y := Jogador^.Retangulo.Y +
                           (Jogador^.Velocidade.Y * Tempo) +
                           ((Jogador^.Aceleracao.Y * (Tempo * Tempo)) / 2.0);
+end;
+
+procedure AndarParaFrente (Jogador: PtJogador; Tempo: single);
+begin
+  if Jogador^.Aceleracao.X < 0 then
+    Jogador^.Aceleracao.X := Jogador^.Aceleracao.X * -1.0;
+  if Jogador^.Velocidade.X < 0 then
+    Jogador^.Velocidade.X := Jogador^.Velocidade.X * -1.0;
+
+  Jogador^.Aceleracao.X := Jogador^.Aceleracao.X  + Andar;
+  if Jogador^.Aceleracao.X > AceleracaoMaximaAndar then
+  begin
+    Jogador^.Aceleracao.X := AceleracaoMaximaAndar;
+  end; 
+  Jogador^.Velocidade.X := Jogador^.Velocidade.X + (Jogador^.Aceleracao.Y * Tempo);
+  if Jogador^.Velocidade.X  > VelocidadeMaximaAndar then
+  begin
+    Jogador^.Velocidade.X := VelocidadeMaximaAndar; 
+  end;
+  Jogador^.Retangulo.X := Jogador^.Retangulo.X +
+                          (Jogador^.Velocidade.X * Tempo) +
+                          ((Jogador^.Aceleracao.X * (Tempo * Tempo)) / 2.0);
+end;
+procedure AndarParaTraz (Jogador: PtJogador; Tempo: single);
+begin
+  if Jogador^.Aceleracao.X > 0 then
+    Jogador^.Aceleracao.X := Jogador^.Aceleracao.X * -1.0;
+  if Jogador^.Velocidade.X > 0 then
+
+  Jogador^.Velocidade.X := Jogador^.Velocidade.X * -1.0;
+  Jogador^.Aceleracao.X := Jogador^.Aceleracao.X  - Andar;
+  if Jogador^.Aceleracao.X < -AceleracaoMaximaAndar then
+  begin
+    Jogador^.Aceleracao.X := -AceleracaoMaximaAndar;
+  end; 
+  Jogador^.Velocidade.X := Jogador^.Velocidade.X - (Jogador^.Aceleracao.Y * Tempo);
+  if Jogador^.Velocidade.X  < -VelocidadeMaximaAndar then
+  begin
+    Jogador^.Velocidade.X := -VelocidadeMaximaAndar; 
+  end;
+  Jogador^.Retangulo.X := Jogador^.Retangulo.X +
+                          (Jogador^.Velocidade.X * Tempo) +
+                          ((Jogador^.Aceleracao.X * (Tempo * Tempo)) / 2.0);
 end;
 
 begin
@@ -122,15 +167,30 @@ begin
       Tempo
    );
    (* Teste para ver se pode iniciar o pulo*)
-   if Jogador.PodePular and IsKeyPressed (KEY_SPACE) then
+   if Jogador.PodePular and (IsKeyPressed (KEY_SPACE) or IsKeyPressed (KEY_UP)) then
    begin
       IniciarPulo (@Jogador, Tempo);
    end;
   
-    if Jogador.EstaPulando and IsKeyDown (KEY_SPACE)  and ((GetTime - Jogador.TempoInicioPulo) <= DuracaoPulo) then
+    if Jogador.EstaPulando and (IsKeyDown (KEY_SPACE) or IsKeyDown (KEY_UP))  and ((GetTime - Jogador.TempoInicioPulo) <= DuracaoPulo) then
     begin
-      writeln ('Tempo: ', GetTime, ' TempoInicioPulo: ', Jogador.TempoInicioPulo, ' Diferenca: ', Tempo - Jogador.TempoInicioPulo);
       ContinuarPulo (@Jogador, Tempo);
+    end;
+
+    if IsKeyDown (KEY_RIGHT) then
+    begin
+      AndarParaFrente (@Jogador, Tempo);
+    end;
+
+    if IsKeyDown (KEY_LEFT) then
+    begin
+      AndarParaTraz (@Jogador, Tempo);
+    end;
+
+    if not IsKeyDown (KEY_RIGHT) and not IsKeyDown (KEY_LEFT) then
+    begin
+      Jogador.Velocidade.X := 0;
+      Jogador.Aceleracao.X := 0;
     end;
 
    if CheckCollisionRecs (Jogador.Retangulo, Chao.Retangulo) then
