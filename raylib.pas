@@ -182,7 +182,7 @@ procedure SetTargetFPS (fps: longInt); cdecl; external;
 {$L libraylib.a}
 function GetFrameTime (): single; cdecl; external;
 {$L libraylib.a}
-function GetTime (): single; cdecl; external;
+function GetTime (): double; cdecl; external;
 (* Fim Tempo *)
 
 (* Colisão *)
@@ -193,6 +193,8 @@ function CheckCollisionRecs(rec1: Rectangle; rec2: Rectangle): boolean; cdecl; e
 (* Teclado *)
 {$L libraylib.a}
 function IsKeyPressed (key: KeyboardKey): boolean; cdecl; external;
+{$L libraylib.a}
+function IsKeyDown (key: KeyboardKey): boolean; cdecl; external;
 
 (* Fim Teclado *)
 

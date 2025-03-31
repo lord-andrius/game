@@ -10,6 +10,7 @@ type
     Cor: Color;
     PodePular: boolean;   
     EstaPulando: boolean;
+    TempoInicioPulo: double;
   end;
 
   PTJogador = ^TJogador;
@@ -44,15 +45,16 @@ var
     PodePular: false;
     EstaPulando: false;
   );
+  Tempo: single;
 
-  Tempo: single = 0.0;
 
 const
   LarguraTela: longInt = 1280;
   AlturaTela: longInt = 720;
-  Gravidade: single = 10.0;
-  DuracaoPulo: single = 0.5; 
-  Pulo: single = 350.0;
+  Gravidade: single = 67.5;
+  DuracaoPulo: double = 0.2; 
+  Pulo: single = 15.0;
+  ContinuacaoPulo: single = 0.5;
   Chao: TChao = (
     Retangulo: (
       X:      0;
@@ -79,16 +81,27 @@ end;
 
 procedure IniciarPulo (Jogador: PTJogador; Tempo: single);
 begin
-  Jogador^.Velocidade.Y := 0; 
-  Jogador^.Aceleracao.Y := 0;
+  Jogador^.TempoInicioPulo := GetTime ();
+  //Jogador^.Velocidade.Y := 0; 
+  //Jogador^.Aceleracao.Y := 0;
   Jogador^.PodePular := false;
   Jogador^.EstaPulando := true;
-  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - Pulo;
+  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (Pulo * Gravidade);
   Jogador^.Velocidade.Y := Jogador^.Velocidade.y + (Jogador^.Aceleracao.Y * Tempo);
   Jogador^.Retangulo.Y := Jogador^.Retangulo.Y +
                           (Jogador^.Velocidade.Y * Tempo) +
                           ((Jogador^.Aceleracao.Y * (Tempo * Tempo)) / 2.0);
-  Jogador^.Retangulo.Y := Jogador^.Retangulo.Y - (150 * Tempo );
+  //Jogador^.Retangulo.Y := Jogador^.Retangulo.Y - (150 * Tempo );
+  //Jogador^.Retangulo.Y := Jogador^.Velocidade.Y + ((-Pulo * (Tempo*Tempo)) / 2.0);
+end;
+
+procedure ContinuarPulo (Jogador: PTJogador; Tempo: single);
+begin
+  Jogador^.Aceleracao.Y := Jogador^.Aceleracao.Y  - (Gravidade * ContinuacaoPulo);
+  Jogador^.Velocidade.Y := Jogador^.Velocidade.y + (Jogador^.Aceleracao.Y * Tempo);
+  Jogador^.Retangulo.Y := Jogador^.Retangulo.Y +
+                          (Jogador^.Velocidade.Y * Tempo) +
+                          ((Jogador^.Aceleracao.Y * (Tempo * Tempo)) / 2.0);
 end;
 
 begin
@@ -109,6 +122,13 @@ begin
    begin
       IniciarPulo (@Jogador, Tempo);
    end;
+  
+    if Jogador.EstaPulando and IsKeyDown (KEY_SPACE)  and ((GetTime - Jogador.TempoInicioPulo) <= DuracaoPulo) then
+    begin
+      writeln ('Tempo: ', GetTime, ' TempoInicioPulo: ', Jogador.TempoInicioPulo, ' Diferenca: ', Tempo - Jogador.TempoInicioPulo);
+      ContinuarPulo (@Jogador, Tempo);
+    end;
+
    if CheckCollisionRecs (Jogador.Retangulo, Chao.Retangulo) then
    begin
      Jogador.Retangulo.Y := Chao.Retangulo.Y - Jogador.Retangulo.Height;
