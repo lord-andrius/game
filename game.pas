@@ -211,7 +211,10 @@ begin
    end;
    BeginDrawing ();
    ClearBackground (BRANCO);
-   Botao (RetanguloBotao, 'Clique Aqui');
+   if Click (Botao (RetanguloBotao, 'Clique Aqui')) then
+   begin
+    writeln ('Botão foi clicado');
+   end;
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);
    FinalizarFrameUi ();

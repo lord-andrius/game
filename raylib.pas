@@ -195,6 +195,30 @@ type
 
   PTexture = ^Texture;
 
+  GlyphInfo = record
+    Value: longint;
+    OffsetX: longint;
+    OffsetY: longint;
+    AdvanceX: longint;
+    Image: Image;
+  end;
+
+  PGlyphInfo = ^GlyphInfo;
+
+  FontType = (
+    FONT_DEFAULT := 0,
+    FONT_BITMAP
+  );
+
+  Font = record
+    BaseSize: longint;
+    GlyphCount: longint;
+    GlyphPadding: longint;
+    Texture: Texture;
+    Recs: PRectangle;
+    Glyphs: PGlyphInfo;
+  end; 
+
 (* Fim Tipos *)
 
 (* Constantes *)
@@ -313,6 +337,11 @@ function IsMouseButtonUp (Button: MouseButton): boolean; cdecl; external;
 {$L libraylib.a}
 function GetMouseWheelMove(): single; cdecl; external;
 (* Fim Mouse *)
+
+(* Texto *)
+{$L libraylib.a}
+function MeasureText (Text: Pchar; FontSize: longint): longint; cdecl; external;
+(* Fim Texto *)
 
 implementation
 

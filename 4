@@ -7,9 +7,7 @@ uses raylib;
 type
 
   TipoElementoVisual = (
-    TNenhum := 0,
-    TBotao
-  );
+    TBotao := 1);
 
   ElementoVisual = record
     Retangulo: Rectangle;
@@ -35,10 +33,6 @@ function Linha (Retangulo: PRectangle; Altura: single): Rectangle;
 function Botao (Retangulo: Rectangle; Texto: Pchar): ElementoVisual;
 
 (* Fim Elementos Visuais *)
-
-(* Acoes *)
-function Click (ElementoVisual: ElementoVisual): boolean;
-(* Fim Acoes *)
 
 (* Ui *)
 procedure FinalizarFrameUi();
@@ -117,47 +111,18 @@ begin
 
   DrawRectangleLinesEx (Retangulo, LarguraDaBorda, CorDaBorda);
 
-  Coluna (@Retangulo,(Retangulo.Width - MeasureText (texto, TamanhoFonte)) / 2); // Essa Coluna é ignorada
-
+  Coluna (MeasureText (texto, TamanhoFonte) / 2); // Essa Coluna é ignorada
   
-  RetanguloTexto := Coluna (@Retangulo, Retangulo.Width - MeasureText (texto, TamanhoFonte) / 2);
+  RetanguloTexto := Coluna (Retangulo.Width - MeasureText (texto, TamanhoFonte) / 2);
 
-  Linha (@RetanguloTexto, Trunc (Retangulo.Height / 2) - TamanhoFonte ); // Essa linha também é ignoreda
+  RetanguloTexto := Linha (Trunc (Retangulo.Height / 2) - (TamanhoFonte / 2))
+  DrawText (Texto, Trunc(Botao.Retangulo.X), Trunc(Botao.Retangulo.Y), TamanhoFonte , CorDoTexto);
 
-  DrawText (Texto, Trunc(RetanguloTexto.X), Trunc(RetanguloTexto.Y), TamanhoFonte , CorDoTexto);
-
-end;
-
-function Click (ElementoVisual: ElementoVisual): boolean;
-begin
-  (*
-    Lógica:
-    O Elemento precisa ser o mesmo do frame atual e do antigo
-    e o elementoAntigo precisa ser ativo e o frame atual precisa
-    ser selecionado mas não ativo
-  *)
-  if (ElementoVisual.Tipo = ElementoAtual.Tipo) and
-     (ElementoVisual.Retangulo.X = ElementoAtual.Retangulo.X) and
-     (ElementoVisual.Retangulo.Y = ElementoAtual.Retangulo.y) and
-     (ElementoVisual.Tipo = ElementoAntigo.Tipo) and
-     (ElementoVisual.Retangulo.X = ElementoAntigo.Retangulo.X) and
-     (ElementoVisual.Retangulo.Y = ElementoAntigo.Retangulo.Y) and
-     (ElementoAntigo.EstaAtivo = true) and
-     (ElementoAtual.EstaAtivo = false) and
-     (ElementoAtual.EstaSelecionado = true) then
-  begin
-    Click := true
-  end
-  else
-  begin
-    Click := false;
-  end;
 end;
 
 procedure FinalizarFrameUi();
 begin
   ElementoAntigo := ElementoAtual;
-  ElementoAtual.Tipo :=  TNenhum;
 end;
 
 end.
