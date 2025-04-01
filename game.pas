@@ -211,8 +211,14 @@ begin
    end;
    BeginDrawing ();
    ClearBackground (BRANCO);
-   if Click (Botao (RetanguloBotao, 'Clique Aqui')) then
+   if Click (Botao (RetanguloBotao, 'Resetar')) then
    begin
+    Jogador.Retangulo.X := 10; 
+    Jogador.Retangulo.Y := 10; 
+    Jogador.Aceleracao.X := 0;
+    Jogador.Aceleracao.Y := 0;
+    Jogador.Velocidade.X := 0;
+    Jogador.Velocidade.Y := 0;
     writeln ('Botão foi clicado');
    end;
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
