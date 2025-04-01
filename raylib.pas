@@ -165,6 +165,18 @@ type
     KEY_VOLUME_DOWN     := 25        // Key: Android volume down button
   );
 
+  MouseButton = (
+    MOUSE_BUTTON_LEFT    := 0,       // Mouse button left
+    MOUSE_BUTTON_RIGHT   := 1,       // Mouse button right
+    MOUSE_BUTTON_MIDDLE  := 2,       // Mouse button middle (pressed wheel)
+    MOUSE_BUTTON_SIDE    := 3,       // Mouse button side (advanced mouse device)
+    MOUSE_BUTTON_EXTRA   := 4,       // Mouse button extra (advanced mouse device)
+    MOUSE_BUTTON_FORWARD := 5,       // Mouse button forward (advanced mouse device)
+    MOUSE_BUTTON_BACK    := 6       // Mouse button back (advanced mouse device)
+  ); 
+
+
+
  Image  = record
   Data: Pchar;
   Width, Height: longInt;
@@ -181,7 +193,6 @@ type
   Format: PixelFormat;
  end;
 
-
   PTexture = ^Texture;
 
 (* Fim Tipos *)
@@ -192,6 +203,12 @@ const
     R: 255;
     G: 255;
     B: 255;
+    A: 255;
+  );
+  Preto: Color = (
+    R: 0;
+    G: 0;
+    B: 0;
     A: 255;
   );
 (* Fim Constantes *)
@@ -214,15 +231,19 @@ procedure BeginDrawing (); cdecl; external;
 {$L libraylib.a}
 procedure EndDrawing (); cdecl; external;
 {$L libraylib.a}
-procedure ClearBackground (color: Color); cdecl; external;
+procedure ClearBackground (Color: Color); cdecl; external;
 {$L libraylib.a}
-procedure DrawRectangleRec (rec: Rectangle; color: Color); cdecl; external;
+procedure DrawRectangleRec (Rec: Rectangle; color: Color); cdecl; external;
+{$L libraylib.a}
+procedure DrawRectangleLinesEx (Rec: Rectangle; LineThick: single; Color: Color); cdecl; external;
+{$L libraylib.a}
+procedure DrawText (Text: Pchar; PosX: longint; PosY: longint; FontSize: longint; Color: Color); cdecl; external;
 
 (* Fim Desenho *)
 
 (* Tempo *)
 {$L libraylib.a}
-procedure SetTargetFPS (fps: longInt); cdecl; external;
+procedure SetTargetFPS (Fps: longInt); cdecl; external;
 {$L libraylib.a}
 function GetFrameTime (): single; cdecl; external;
 {$L libraylib.a}
@@ -232,6 +253,8 @@ function GetTime (): double; cdecl; external;
 (* Colisão *)
 {$L libraylib.a}
 function CheckCollisionRecs(rec1: Rectangle; rec2: Rectangle): boolean; cdecl; external;
+{$L libraylib.a}
+function CheckCollisionPointRec(Point: Vector2; Rec: Rectangle): boolean; cdecl; external;
 (* Fim Colisão *)
 
 (* Teclado *)
@@ -275,6 +298,21 @@ procedure UpdateTexture (Texture: Texture; Pixels: PChar); cdecl; external;
 procedure UpdateTextureRec (Texture: Texture; Rec: Rectangle; Pixels: Pchar ); cdecl; external;
 
 (* Fim Textura *)
+
+(* Mouse *)
+{$L libraylib.a}
+function GetMousePosition (): Vector2; cdecl; external;
+{$L libraylib.a}
+function IsMouseButtonPressed (Button: MouseButton): boolean; cdecl; external;
+{$L libraylib.a}
+function IsMouseButtonDown (Button: MouseButton): boolean; cdecl; external;
+{$L libraylib.a}
+function IsMouseButtonReleased (Button: MouseButton): boolean; cdecl; external;
+{$L libraylib.a}
+function IsMouseButtonUp (Button: MouseButton): boolean; cdecl; external;
+{$L libraylib.a}
+function GetMouseWheelMove(): single; cdecl; external;
+(* Fim Mouse *)
 
 implementation
 

@@ -65,6 +65,12 @@ const
   Correr: single =  4.0;
   AceleracaoMaximaCorrer: single =  12.0;
   VelocidadeMaximaCorrer: single =  24.0;
+  RetanguloBotao: Rectangle = (
+    X: 50;
+    Y: 50;
+    Width: 100;
+    Height: 50;
+  );
   Chao: TChao = (
     Retangulo: (
       X:      0;
@@ -205,8 +211,10 @@ begin
    end;
    BeginDrawing ();
    ClearBackground (BRANCO);
+   Botao (RetanguloBotao, 'Clique Aqui');
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);
+   FinalizarFrameUi ();
    EndDrawing ();
  end; 
  ImageDestroy (Imagem); 
