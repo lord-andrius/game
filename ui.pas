@@ -8,7 +8,8 @@ type
 
   TipoElementoVisual = (
     TNenhum := 0,
-    TBotao
+    TBotao,
+    TPainel
   );
 
   ElementoVisual = record
@@ -19,6 +20,12 @@ type
     EstaSelecionado: boolean; // se o mouse está em cima
     EstaAtivo: boolean; // se o botão do mouse foi pressionado em cima do elemento visual 
   end;
+
+  Alinhamento = (
+    Esquerda := 1,
+    Centro   := 2,
+    Direita  := 3
+  );
 
 var // variáveis globais
   ElementoAntigo: ElementoVisual; // elemento selecionado no frame anterior
@@ -34,6 +41,8 @@ function Linha (Retangulo: PRectangle; Altura: single): Rectangle;
 (* Elementos Visuais *)
 function Botao (Retangulo: Rectangle; Texto: Pchar): ElementoVisual;
 
+//function Painel (Retangulo: Rectangle; Titulo: Pchar: ElementoVisual;
+
 (* Fim Elementos Visuais *)
 
 (* Acoes *)
@@ -41,8 +50,13 @@ function Click (ElementoVisual: ElementoVisual): boolean;
 (* Fim Acoes *)
 
 (* Ui *)
-procedure FinalizarFrameUi();
+procedure FinalizarFrameUi ();
 (* Fim Ui *)
+
+(* Utilidades *)
+function CalcularLarguraAlturaDoTexto (Texto: Pchar; TamanhoFonte: longInt): Vector2; cdecl;
+procedure DesenharTextoNoRetangulo (Retangulo: Rectangle; Texto: Pchar; TamanhoFonte: longInt; Alinhamento: Alinhamento; Cor: Color); 
+(* Fim Utilidades *)
 
 
 implementation
@@ -117,14 +131,8 @@ begin
 
   DrawRectangleLinesEx (Retangulo, LarguraDaBorda, CorDaBorda);
 
-  Coluna (@Retangulo,(Retangulo.Width - MeasureText (texto, TamanhoFonte)) / 2); // Essa Coluna é ignorada
 
-  
-  RetanguloTexto := Coluna (@Retangulo, Retangulo.Width - MeasureText (texto, TamanhoFonte) / 2);
-
-  Linha (@RetanguloTexto, Trunc (Retangulo.Height / 2) - TamanhoFonte ); // Essa linha também é ignoreda
-
-  DrawText (Texto, Trunc(RetanguloTexto.X), Trunc(RetanguloTexto.Y), TamanhoFonte , CorDoTexto);
+  DesenharTextoNoRetangulo (Retangulo, Texto, TamanhoFonte, Centro, CorDoTexto);
 
 end;
 
@@ -152,6 +160,29 @@ begin
   begin
     Click := false;
   end;
+end;
+
+function CalcularLarguraAlturaDoTexto (Texto: Pchar; TamanhoFonte: longInt): Vector2; cdecl;
+begin
+  CalcularLarguraAlturaDoTexto.X := MeasureText (Texto, TamanhoFonte);
+  CalcularLarguraAlturaDoTexto.Y := MeasureTextEx (GetFontDefault (), Texto, single (TamanhoFonte), 1).Y;
+end;
+
+procedure DesenharTextoNoRetangulo (Retangulo: Rectangle; Texto: Pchar; TamanhoFonte: longInt; Alinhamento: Alinhamento; Cor: Color); 
+var
+  XTexto: longInt; 
+  YTexto: longInt; 
+  LarguraAltura: Vector2;
+begin
+  LarguraAltura := CalcularLarguraAlturaDoTexto (Texto, TamanhoFonte);
+  YTexto := Trunc (Retangulo.Y) + Trunc ((Retangulo.Height / 2.0) - (LarguraAltura.Y / 2.0));
+  case Alinhamento of
+    Esquerda: XTexto := Trunc (Retangulo.X);
+    Centro:   XTexto := Trunc (Retangulo.X) + Trunc ((Retangulo.Width / 2.0) - (LarguraAltura.X / 2.0));
+    Direita:  XTexto := Trunc (Retangulo.X + Retangulo.Width - LarguraAltura.X);
+  end;
+
+  DrawText (Texto, XTexto, YTexto, TamanhoFonte, Cor);
 end;
 
 procedure FinalizarFrameUi();

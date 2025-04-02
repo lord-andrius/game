@@ -340,8 +340,20 @@ function GetMouseWheelMove(): single; cdecl; external;
 
 (* Texto *)
 {$L libraylib.a}
-function MeasureText (Text: Pchar; FontSize: longint): longint; cdecl; external;
+function MeasureText (Text: Pchar; FontSize: longInt): longInt; cdecl; external;
+{$L libraylib.a}
+function MeasureTextEx (Font: Font; Text: Pchar; FontSize: single; Spacing: single): Vector2; cdecl; external;
+{$L libraylib.a}
+function GetGlyphAtlasRec (Font: Font; Codepoint: longInt): Rectangle; cdecl; external;
+{$L libraylib.a}
+function GetGlyphInfo (Font: Font; Codepoint: longInt): GlyphInfo; cdecl; external;
 (* Fim Texto *)
+
+(* Fonte *)
+{$L libraylib.a}
+function GetFontDefault (): Font; cdecl; external;
+
+(* Fim Fonte *)
 
 implementation
 

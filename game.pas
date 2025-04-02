@@ -211,7 +211,7 @@ begin
    end;
    BeginDrawing ();
    ClearBackground (BRANCO);
-   if Click (Botao (RetanguloBotao, 'Resetar')) then
+   if Click (Botao (RetanguloBotao, 'Clique Aqui')) then
    begin
     Jogador.Retangulo.X := 10; 
     Jogador.Retangulo.Y := 10; 
@@ -222,6 +222,7 @@ begin
     writeln ('Botão foi clicado');
    end;
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
+   DesenharTextoNoRetangulo (Jogador.Retangulo, 'Jogador', 15, Direita, Preto);
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);
    FinalizarFrameUi ();
    EndDrawing ();
