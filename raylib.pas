@@ -327,6 +327,8 @@ procedure UpdateTextureRec (Texture: Texture; Rec: Rectangle; Pixels: Pchar ); c
 {$L libraylib.a}
 function GetMousePosition (): Vector2; cdecl; external;
 {$L libraylib.a}
+function GetMouseDelta (): Vector2; cdecl; external;
+{$L libraylib.a}
 function IsMouseButtonPressed (Button: MouseButton): boolean; cdecl; external;
 {$L libraylib.a}
 function IsMouseButtonDown (Button: MouseButton): boolean; cdecl; external;

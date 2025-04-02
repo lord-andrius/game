@@ -23,6 +23,14 @@ type
   end;
 
 var
+  MostrarPainel: boolean = true;
+  RetanguloPainel: Rectangle = (
+    X: 42;
+    Y: 12;
+    Width: 250;
+    Height: 400;
+     
+  );
   Jogador: TJogador = (
     Retangulo: (
       X:      50.0;
@@ -219,8 +227,10 @@ begin
     Jogador.Aceleracao.Y := 0;
     Jogador.Velocidade.X := 0;
     Jogador.Velocidade.Y := 0;
-    writeln ('Botão foi clicado');
+    MostrarPainel := true;
    end;
+   if MostrarPainel then
+     MostrarPainel := PainelDeveFechar (Painel (@RetanguloPainel, 'Editor')) = false;
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
    DesenharTextoNoRetangulo (Jogador.Retangulo, 'Jogador', 15, Direita, Preto);
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);

@@ -41,12 +41,13 @@ function Linha (Retangulo: PRectangle; Altura: single): Rectangle;
 (* Elementos Visuais *)
 function Botao (Retangulo: Rectangle; Texto: Pchar): ElementoVisual;
 
-//function Painel (Retangulo: Rectangle; Titulo: Pchar: ElementoVisual;
+function Painel (PRetangulo: PRectangle; Titulo: Pchar): ElementoVisual;
 
 (* Fim Elementos Visuais *)
 
 (* Acoes *)
 function Click (ElementoVisual: ElementoVisual): boolean;
+function PainelDeveFechar (ElementoVisual: ElementoVisual): boolean;
 (* Fim Acoes *)
 
 (* Ui *)
@@ -64,7 +65,7 @@ implementation
 function Coluna (Retangulo: PRectangle; Largura: single): Rectangle;
 begin
   Coluna.X := Retangulo^.X;
-  Coluna.Y := Retangulo^.X;
+  Coluna.Y := Retangulo^.Y;
   Coluna.Height := Retangulo^.Height;
   if Largura <= Retangulo^.Width then
   begin
@@ -92,7 +93,7 @@ begin
     Linha.Height := Retangulo^.Height;
   end;
   Retangulo^.Y := Retangulo^.Y + Linha.Height;
-  Retangulo^.Height := Retangulo^.Y - Linha.Height;
+  Retangulo^.Height := Retangulo^.Height - Linha.Height;
 end;
 
 function Botao (Retangulo: Rectangle; Texto: Pchar): ElementoVisual;
@@ -136,6 +137,108 @@ begin
 
 end;
 
+function Painel (PRetangulo: PRectangle; Titulo: Pchar): ElementoVisual;
+const
+  AlturaCabecalho: single = 20;
+  TamanhoFonteTitulo: longInt = 20;
+  TamanhoFonteX: longInt = 30;
+  CorDoFundo: Color = (R: 169; G: 169; B: 169; A: 255);
+  CorDaBordaNaoSelecionado: Color = (R: 128; G: 128; B: 128; A: 255);
+  CorDaBordaSelecionado: Color = (R: 150; G: 150; B: 150; A: 255);
+  CorDaBordaAtivo: Color = (R: 200; G: 200; B: 200; A: 255);
+var
+  Retangulo: Rectangle;
+  RetanguloOriginal: Rectangle; 
+  Cabecalho: Rectangle;
+  CabecalhoTitulo: Rectangle;
+  CabecalhoX: Rectangle;
+  CabecalhoOriginal: Rectangle;
+  CorDaBorda: Color;
+  TamanhoDaBorda: longint;
+  
+begin
+  Painel.Tipo := TPainel;
+  Painel.EstaSelecionado := false;
+  Painel.EstaAtivo := false;
+  TamanhoDaBorda := 1;
+  
+  // movendo o painel se necessário
+  if (Painel.Tipo = ElementoAntigo.Tipo) and
+     (PRetangulo^.X = ElementoAntigo.Retangulo.X) and
+     ((PRetangulo^.Y + AlturaCabecalho) = ElementoAntigo.Retangulo.Y) and
+     (PRetangulo^.Width = ElementoAntigo.Retangulo.Width) and
+     ((PRetangulo^.Height - AlturaCabecalho) = ElementoAntigo.Retangulo.Height) and
+     (ElementoAntigo.EstaAtivo) = true then
+  begin
+      if GetMousePosition ().X < PRetangulo^.X then
+      begin
+        PRetangulo^.X := PRetangulo^.X - GetMouseDelta ().X;
+      end
+      else
+      begin
+        PRetangulo^.X := PRetangulo^.X + GetMouseDelta ().X;
+      end;
+      if GetMousePosition ().Y < PRetangulo^.Y then
+      begin
+        PRetangulo^.Y := PRetangulo^.Y - GetMouseDelta ().Y;
+      end
+      else
+      begin
+        PRetangulo^.Y := PRetangulo^.Y + GetMouseDelta ().Y;
+      end;
+
+  end;
+
+  Retangulo := PRetangulo^;
+  RetanguloOriginal := PRetangulo^;
+  
+  Cabecalho := Linha (@Retangulo, AlturaCabecalho);
+
+  CabecalhoOriginal := Cabecalho;
+
+  CabecalhoTitulo := Coluna (@Cabecalho, Cabecalho.Width - CalcularLarguraAlturaDoTexto ('X', TamanhoFonteX).X);
+  CabecalhoX := Coluna (@Cabecalho, CalcularLarguraAlturaDoTexto ('X', TamanhoFonteX).X);
+
+  Painel.Retangulo := Retangulo;
+  
+  CorDaBorda := CorDaBordaNaoSelecionado;
+
+  if CheckCollisionPointRec (GetMousePosition (), CabecalhoTitulo) or 
+     CheckCollisionPointRec (GetMousePosition (), Retangulo) then
+  begin
+    CorDaBorda := CorDaBordaSelecionado;
+    Painel.EstaSelecionado := true;
+  end;
+
+  if Painel.EstaSelecionado and CheckCollisionPointRec (GetMousePosition (), CabecalhoTitulo) and IsMouseButtonDown (MOUSE_BUTTON_LEFT) then
+  begin
+    Painel.EstaAtivo := true;
+    CorDaBorda := CorDaBordaAtivo;
+  end;
+
+  
+    //Desenhando borda do painel inteiro
+  DrawRectangleLinesEx (RetanguloOriginal, 1, CorDaBorda);   
+
+  //Desenhando o cabeçalho
+  DrawRectangleLinesEx (CabecalhoOriginal, 1, CorDaBordaNaoSelecionado);   
+  DrawRectangleRec (CabecalhoOriginal, CorDoFundo);   
+  DesenharTextoNoRetangulo (CabecalhoTitulo, Titulo, 5, Esquerda, PRETO);
+  if Click (Botao (CabecalhoX, 'X')) then
+  begin
+    Painel.Valor := 1;
+  end
+  else
+  begin
+    Painel.Valor := 0;
+  end;
+
+  if Painel.EstaSelecionado then
+    ElementoAtual := Painel
+  
+
+end;
+
 function Click (ElementoVisual: ElementoVisual): boolean;
 begin
   (*
@@ -160,6 +263,11 @@ begin
   begin
     Click := false;
   end;
+end;
+
+function PainelDeveFechar (ElementoVisual: ElementoVisual): boolean;
+begin
+    PainelDeveFechar := ElementoVisual.Valor = 1;
 end;
 
 function CalcularLarguraAlturaDoTexto (Texto: Pchar; TamanhoFonte: longInt): Vector2; cdecl;
