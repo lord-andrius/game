@@ -13,6 +13,7 @@ type
   );
 
   ElementoVisual = record
+    Id: integer;
     Retangulo: Rectangle;
     Tipo: TipoElementoVisual;
     Texto: Pchar; 
@@ -30,6 +31,10 @@ type
 var // variáveis globais
   ElementoAntigo: ElementoVisual; // elemento selecionado no frame anterior
   ElementoAtual: ElementoVisual; // elemento selecionado no frame atual
+  ElementoSendoArrastado: ElementoVisual; // elemento que está sendo arrastado 
+  ElementoArrastado: ElementoVisual; // elemento que parou de ser arrastado
+  ElementoFoiConsumido: boolean; // O elemento que consome outro elemento arrastado deve modificar essa flag
+  IdAtual: integer = 0;
 
 (* Layout *)
 
@@ -51,6 +56,8 @@ function PainelDeveFechar (ElementoVisual: ElementoVisual): boolean;
 (* Fim Acoes *)
 
 (* Ui *)
+procedure ComecarFrameUi ();
+function PegarId (): integer;
 procedure FinalizarFrameUi ();
 (* Fim Ui *)
 
@@ -110,6 +117,7 @@ begin
   Botao.Tipo := TBotao;
   Botao.EstaSelecionado := false;
   Botao.EstaAtivo := false;
+  Botao.Id := PegarId ();
   
   PosicaoDoMouse := GetMousePosition ();
 
@@ -155,13 +163,15 @@ var
   CabecalhoOriginal: Rectangle;
   CorDaBorda: Color;
   TamanhoDaBorda: longint;
-  
+  EstaSendoArrastado:boolean = false;
 begin
+  Painel.Id := PegarId ();
   Painel.Tipo := TPainel;
   Painel.EstaSelecionado := false;
   Painel.EstaAtivo := false;
   TamanhoDaBorda := 1;
   
+  (*
   // movendo o painel se necessário
   if (Painel.Tipo = ElementoAntigo.Tipo) and
      (PRetangulo^.X = ElementoAntigo.Retangulo.X) and
@@ -169,25 +179,19 @@ begin
      (PRetangulo^.Width = ElementoAntigo.Retangulo.Width) and
      ((PRetangulo^.Height - AlturaCabecalho) = ElementoAntigo.Retangulo.Height) and
      (ElementoAntigo.EstaAtivo) = true then
-  begin
-      if GetMousePosition ().X < PRetangulo^.X then
       begin
-        PRetangulo^.X := PRetangulo^.X - GetMouseDelta ().X;
-      end
-      else
-      begin
-        PRetangulo^.X := PRetangulo^.X + GetMouseDelta ().X;
-      end;
-      if GetMousePosition ().Y < PRetangulo^.Y then
-      begin
-        PRetangulo^.Y := PRetangulo^.Y - GetMouseDelta ().Y;
-      end
-      else
-      begin
-        PRetangulo^.Y := PRetangulo^.Y + GetMouseDelta ().Y;
-      end;
-
+      EstaSendoArrastado := true;
   end;
+  *)
+  // movendo o painel pelo drag e drop
+  if (Painel.Tipo = ElementoSendoArrastado.Tipo) and
+     (Painel.Id = ElementoSendoArrastado.Id) then
+  begin
+      PRetangulo^.X := PRetangulo^.X + GetMouseDelta ().X;
+      PRetangulo^.Y := PRetangulo^.Y + GetMouseDelta ().Y;
+  end;
+
+
 
   Retangulo := PRetangulo^;
   RetanguloOriginal := PRetangulo^;
@@ -213,6 +217,7 @@ begin
   if Painel.EstaSelecionado and CheckCollisionPointRec (GetMousePosition (), CabecalhoTitulo) and IsMouseButtonDown (MOUSE_BUTTON_LEFT) then
   begin
     Painel.EstaAtivo := true;
+    EstaSendoArrastado := true;
     CorDaBorda := CorDaBordaAtivo;
   end;
 
@@ -234,8 +239,10 @@ begin
   end;
 
   if Painel.EstaSelecionado then
-    ElementoAtual := Painel
-  
+    ElementoAtual := Painel;
+ 
+  if EstaSendoArrastado = true then
+    ElementoSendoArrastado := Painel;
 
 end;
 
@@ -247,12 +254,10 @@ begin
     e o elementoAntigo precisa ser ativo e o frame atual precisa
     ser selecionado mas não ativo
   *)
-  if (ElementoVisual.Tipo = ElementoAtual.Tipo) and
-     (ElementoVisual.Retangulo.X = ElementoAtual.Retangulo.X) and
-     (ElementoVisual.Retangulo.Y = ElementoAtual.Retangulo.y) and
+  if (ElementoVisual.Id = ElementoAtual.Id) and
+     (ElementoVisual.Tipo = ElementoAtual.Tipo) and
+     (ElementoVisual.Id = ElementoAntigo.Id) and
      (ElementoVisual.Tipo = ElementoAntigo.Tipo) and
-     (ElementoVisual.Retangulo.X = ElementoAntigo.Retangulo.X) and
-     (ElementoVisual.Retangulo.Y = ElementoAntigo.Retangulo.Y) and
      (ElementoAntigo.EstaAtivo = true) and
      (ElementoAtual.EstaAtivo = false) and
      (ElementoAtual.EstaSelecionado = true) then
@@ -293,10 +298,25 @@ begin
   DrawText (Texto, XTexto, YTexto, TamanhoFonte, Cor);
 end;
 
+procedure ComecarFrameUi ();
+begin
+  IdAtual := 0; 
+end;
+function PegarId(): integer;
+begin 
+  PegarId := IdAtual;
+  IdAtual := IdAtual + 1;
+end;
 procedure FinalizarFrameUi();
 begin
   ElementoAntigo := ElementoAtual;
   ElementoAtual.Tipo :=  TNenhum;
+  if (ElementoSendoArrastado.Tipo <> TNenhum) and IsMouseButtonReleased (MOUSE_BUTTON_LEFT) then
+  begin
+    ElementoArrastado := ElementoSendoArrastado;
+    ElementoSendoArrastado.Tipo := TNenhum;
+    ElementoFoiConsumido := false;
+  end; 
 end;
 
 end.

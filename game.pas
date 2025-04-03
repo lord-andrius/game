@@ -218,6 +218,7 @@ begin
      Jogador.EstaPulando := false;
    end;
    BeginDrawing ();
+   ComecarFrameUi ();
    ClearBackground (BRANCO);
    if Click (Botao (RetanguloBotao, 'Clique Aqui')) then
    begin
