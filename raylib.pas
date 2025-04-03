@@ -285,6 +285,8 @@ function CheckCollisionPointRec(Point: Vector2; Rec: Rectangle): boolean; cdecl;
 {$L libraylib.a}
 function IsKeyPressed (key: KeyboardKey): boolean; cdecl; external;
 {$L libraylib.a}
+function IsKeyReleased (key: KeyboardKey): boolean; cdecl; external;
+{$L libraylib.a}
 function IsKeyDown (key: KeyboardKey): boolean; cdecl; external;
 
 (* Fim Teclado *)

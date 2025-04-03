@@ -183,16 +183,29 @@ begin
       EstaSendoArrastado := true;
   end;
   *)
-  // movendo o painel pelo drag e drop
-  if (Painel.Tipo = ElementoSendoArrastado.Tipo) and
-     (Painel.Id = ElementoSendoArrastado.Id) then
+
+  if (GetMousePosition ().X >= (PRetangulo^.X)) and
+     (GetMousePosition ().X <= (PRetangulo^.X + PRetangulo^.Width)) and
+     (GetMousePosition ().Y >= (PRetangulo^.Y)) and
+     (GetMousePosition ().Y <= (PRetangulo^.Y + PRetangulo^.Height - AlturaCabecalho)) and
+     (IsMouseButtonDown (MOUSE_BUTTON_LEFT)) and
+     (IsKeyDown (KEY_LEFT_ALT)) then
   begin
-      PRetangulo^.X := PRetangulo^.X + GetMouseDelta ().X;
-      PRetangulo^.Y := PRetangulo^.Y + GetMouseDelta ().Y;
+    PRetangulo^.Width := PRetangulo^.Width + GetMouseDelta ().X;
+    PRetangulo^.Height := PRetangulo^.Height + GetMouseDelta ().Y;
   end;
 
 
+  // movendo o painel pelo drag e drop
+  if (Painel.Tipo = ElementoSendoArrastado.Tipo) and
+     (Painel.Id = ElementoSendoArrastado.Id)  and
+     (IsKeyDown (KEY_LEFT_ALT) = false) then
+  begin
+    PRetangulo^.X := PRetangulo^.X + GetMouseDelta ().X;
+    PRetangulo^.Y := PRetangulo^.Y + GetMouseDelta ().Y;
+  end;
 
+  
   Retangulo := PRetangulo^;
   RetanguloOriginal := PRetangulo^;
   
