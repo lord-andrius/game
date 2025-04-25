@@ -9,7 +9,8 @@ type
   TipoElementoVisual = (
     TNenhum := 0,
     TBotao,
-    TPainel
+    TPainel,
+    TSeletor
   );
 
   ElementoVisual = record
@@ -26,6 +27,11 @@ type
     Esquerda := 1,
     Centro   := 2,
     Direita  := 3
+  );
+
+  Orientacao = (
+    Horizontal := 1,
+    Vertical
   );
 
 var // variáveis globais
@@ -47,6 +53,8 @@ function Linha (Retangulo: PRectangle; Altura: single): Rectangle;
 function Botao (Retangulo: Rectangle; Texto: Pchar): ElementoVisual;
 
 function Painel (PRetangulo: PRectangle; Titulo: Pchar): ElementoVisual;
+
+function Seletor (Retangulo: Rectangle; ValorAtual: PSingle; ValorMinimo: Single; ValorMaximo: Single; Orientacao: Orientacao): ElementoVisual;
 
 (* Fim Elementos Visuais *)
 
@@ -257,6 +265,88 @@ begin
   if EstaSendoArrastado = true then
     ElementoSendoArrastado := Painel;
 
+end;
+
+function Seletor (Retangulo: Rectangle; ValorAtual: PSingle; ValorMinimo: Single; ValorMaximo: Single; Orientacao: Orientacao): ElementoVisual;
+const 
+  TamanhoDoSeletor: single = 20;
+var
+  SeletorRetangulo: Rectangle; 
+  AntigoSeletorRetangulo: Rectangle; 
+  CorDaBordaRetangulo: Color;
+  CorDaBordaSeletorRetangulo: Color;
+  MouseDelta: Vector2;
+  PosicaoDoMouse: Vector2;
+  PosicaoFinal: single;
+  Porcentagem: single;
+begin
+  CorDaBordaRetangulo := PRETO;
+  CorDaBordaSeletorRetangulo := PRETO;
+  Seletor.Retangulo := Retangulo;
+  Seletor.Tipo := TSeletor;
+  Seletor.EstaSelecionado := false;
+  Seletor.EstaAtivo := false;
+  Seletor.Id := PegarId ();
+  if Orientacao = Horizontal then
+  begin
+    SeletorRetangulo.Width := TamanhoDoSeletor;
+    SeletorRetangulo.Height := Retangulo.Height;
+    PosicaoFinal := Retangulo.X + Retangulo.Width - SeletorRetangulo.Width;
+    Porcentagem := ValorAtual^ / ValorMaximo;
+    SeletorRetangulo.X := Retangulo.X + PosicaoFinal * Porcentagem;
+    SeletorRetangulo.Y := Retangulo.Y;
+  end
+  else
+  begin
+    SeletorRetangulo.Width := Retangulo.Width;
+    SeletorRetangulo.Height := TamanhoDoSeletor;
+    SeletorRetangulo.X := Retangulo.X;
+    SeletorRetangulo.Y := Retangulo.Y + (Retangulo.Y * ValorAtual^) / ValorMinimo;
+    PosicaoFinal := Retangulo.Y + Retangulo.Height - SeletorRetangulo.Height;
+  end; 
+
+  AntigoSeletorRetangulo := SeletorRetangulo;
+
+  if  CheckCollisionPointRec (GetMousePosition (), Retangulo) then
+  begin
+    Seletor.EstaSelecionado := true;
+    CorDaBordaRetangulo := VERMELHO;
+  end;
+
+  if CheckCollisionPointRec (GetMousePosition (), SeletorRetangulo) and IsMouseButtonDown (MOUSE_BUTTON_LEFT) then
+  begin
+    Seletor.EstaAtivo := true;
+    CorDaBordaSeletorRetangulo := VERMELHO;
+  end;
+  
+  DrawRectangleLinesEx (Retangulo, 1, CorDaBordaRetangulo);
+  DrawRectangleRec (SeletorRetangulo, PRETO);
+  DrawRectangleLinesEx (SeletorRetangulo, 1, CorDaBordaSeletorRetangulo);
+
+  if Seletor.EstaAtivo then
+  begin
+    MouseDelta := GetMouseDelta (); 
+    if Orientacao = Horizontal then
+      SeletorRetangulo.X := SeletorRetangulo.X + MouseDelta.X
+    else
+      SeletorRetangulo.Y := SeletorRetangulo.Y + MouseDelta.Y;
+  end
+  else
+  if Seletor.EstaSelecionado and IsMouseButtonDown (MOUSE_BUTTON_LEFT) then
+  begin
+    PosicaoDoMouse := GetMousePosition ();
+    if Orientacao = Horizontal then
+      SeletorRetangulo.X := PosicaoDoMouse.X - (TamanhoDoSeletor / 2) 
+    else
+      SeletorRetangulo.Y := PosicaoDoMouse.Y - (TamanhoDoSeletor / 2);
+  end;
+   
+    Porcentagem := (SeletorRetangulo.X - AntigoSeletorRetangulo.X) / Retangulo.Width; 
+    if Porcentagem <> 0 then
+      ValorAtual^ := ValorMaximo * Porcentagem;
+     
+    if Seletor.EstaSelecionado then
+    ElementoAtual := Seletor; 
 end;
 
 function Click (ElementoVisual: ElementoVisual): boolean;

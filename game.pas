@@ -23,6 +23,8 @@ type
   end;
 
 var
+  valor: single = 1.0;
+  Painel1: ElementoVisual;
   MostrarPainel: boolean = true;
   RetanguloPainel: Rectangle = (
     X: 42;
@@ -126,42 +128,15 @@ end;
 
 procedure AndarParaFrente (Jogador: PtJogador; Tempo: single);
 begin
-  if Jogador^.Aceleracao.X < 0 then
-    Jogador^.Aceleracao.X := Jogador^.Aceleracao.X * -1.0;
-  if Jogador^.Velocidade.X < 0 then
-    Jogador^.Velocidade.X := Jogador^.Velocidade.X * -1.0;
+  Jogador^.Velocidade.X := Andar;
 
-  Jogador^.Aceleracao.X := Jogador^.Aceleracao.X  + Andar;
-  if Jogador^.Aceleracao.X > AceleracaoMaximaAndar then
-  begin
-    Jogador^.Aceleracao.X := AceleracaoMaximaAndar;
-  end; 
-  Jogador^.Velocidade.X := Jogador^.Velocidade.X + (Jogador^.Aceleracao.Y * Tempo);
-  if Jogador^.Velocidade.X  > VelocidadeMaximaAndar then
-  begin
-    Jogador^.Velocidade.X := VelocidadeMaximaAndar; 
-  end;
   Jogador^.Retangulo.X := Jogador^.Retangulo.X +
                           (Jogador^.Velocidade.X * Tempo) +
                           ((Jogador^.Aceleracao.X * (Tempo * Tempo)) / 2.0);
 end;
 procedure AndarParaTraz (Jogador: PtJogador; Tempo: single);
 begin
-  if Jogador^.Aceleracao.X > 0 then
-    Jogador^.Aceleracao.X := Jogador^.Aceleracao.X * -1.0;
-  if Jogador^.Velocidade.X > 0 then
-
-  Jogador^.Velocidade.X := Jogador^.Velocidade.X * -1.0;
-  Jogador^.Aceleracao.X := Jogador^.Aceleracao.X  - Andar;
-  if Jogador^.Aceleracao.X < -AceleracaoMaximaAndar then
-  begin
-    Jogador^.Aceleracao.X := -AceleracaoMaximaAndar;
-  end; 
-  Jogador^.Velocidade.X := Jogador^.Velocidade.X - (Jogador^.Aceleracao.Y * Tempo);
-  if Jogador^.Velocidade.X  < -VelocidadeMaximaAndar then
-  begin
-    Jogador^.Velocidade.X := -VelocidadeMaximaAndar; 
-  end;
+  JOgador^.Velocidade.X := -Andar;
   Jogador^.Retangulo.X := Jogador^.Retangulo.X +
                           (Jogador^.Velocidade.X * Tempo) +
                           ((Jogador^.Aceleracao.X * (Tempo * Tempo)) / 2.0);
@@ -231,7 +206,14 @@ begin
     MostrarPainel := true;
    end;
    if MostrarPainel then
-     MostrarPainel := PainelDeveFechar (Painel (@RetanguloPainel, 'Editor')) = false;
+   begin
+     Painel1 := Painel (@RetanguloPainel, 'Editor');
+     Botao (Linha (@Painel1.Retangulo, 50),'Lakitu');
+     Botao (Linha (@Painel1.Retangulo, 50),'Lakitu2');
+     Seletor (Linha (@Painel1.Retangulo, 50), @Valor,1, 100, Horizontal);
+     //Seletor (Coluna (@Painel1.Retangulo, 50), @Valor, Vertical);
+     MostrarPainel := PainelDeveFechar (Painel1) = false;
+   end; 
    DrawRectangleRec (Jogador.Retangulo, Jogador.Cor);
    DesenharTextoNoRetangulo (Jogador.Retangulo, 'Jogador', 15, Direita, Preto);
    DrawRectangleRec (Chao.Retangulo, Chao.Cor);

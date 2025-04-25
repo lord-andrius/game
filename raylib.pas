@@ -235,6 +235,12 @@ const
     B: 0;
     A: 255;
   );
+  Vermelho: Color = (
+    R: 255;
+    G: 0;
+    B: 0;
+    A: 255;
+  );
 (* Fim Constantes *)
 
 (* Janela *)
@@ -262,7 +268,8 @@ procedure DrawRectangleRec (Rec: Rectangle; color: Color); cdecl; external;
 procedure DrawRectangleLinesEx (Rec: Rectangle; LineThick: single; Color: Color); cdecl; external;
 {$L libraylib.a}
 procedure DrawText (Text: Pchar; PosX: longint; PosY: longint; FontSize: longint; Color: Color); cdecl; external;
-
+{$L libraylib.a}
+procedure DrawLineEx (StartPos: Vector2; EndPos: Vector2; Thick: single; Color:Color); cdecl; external;
 (* Fim Desenho *)
 
 (* Tempo *)
